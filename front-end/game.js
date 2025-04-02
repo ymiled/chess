@@ -385,7 +385,17 @@ class ChessGame {
     handleGameResult(winner, loser, message) {
         this.gameOver = true;
         this.stopTimer();
-        this.showGameOverPopup(message);        
+        this.showGameOverPopup(message);      
+        
+        if (winner === "white") {
+            this.moveHistory.push("1-0");
+        } else if (winner === "black") {
+            this.moveHistory.push("0-1");
+        } else {
+            this.moveHistory.push("1/2-1/2");
+        }
+        this.updateMoveHistoryDisplay();
+        this.clearGameInfo();
         
         socket.emit('update_database', {
             userId: this.playerId,
@@ -403,6 +413,14 @@ class ChessGame {
         
         const winners =  winnerColor ===  "white" ? "Les Blancs" : "Les Noirs";
         this.showVictoryPopup(`${winners} gagnent par abandon !`);
+
+        if (winnerColor === "white") {
+            this.moveHistory.push("1-0");
+        } else {
+            this.moveHistory.push("0-1");
+        }
+        this.updateMoveHistoryDisplay();
+        this.clearGameInfo();
         
         // Emit resignation to server
         socket.emit('update_database', {
@@ -413,8 +431,6 @@ class ChessGame {
         console.log(`Les ${winnerColor} gagnent par abandon !`);
 
         
-        this.updateGameStatus(`${winners} gagnent par abandon`);
-        //this.addMoveToHistory(null, null, null, null, `[Abandon des ${loserColor}]`);
         
         this.selectedPiece = null;
         this.clearBoard();
@@ -969,9 +985,28 @@ class ChessGame {
     }
     
     updateMoveHistoryDisplay() {
-        this.moveHistoryElement.innerHTML = this.moveHistory.join("<br>");
+        let formattedHistory = [];
+        for (let i = 0; i < this.moveHistory.length; i++) {
+            const move = this.moveHistory[i];
+            if (move.includes(".") || move.includes("...")) {
+                formattedHistory.push(move);
+            } else {
+                // This is a result (1-0, 0-1, 1/2-1/2)
+                formattedHistory.push(`<strong>${move}</strong>`);
+            }
+        }
         
+        this.moveHistoryElement.innerHTML = formattedHistory.join("<br>");
         this.moveHistoryElement.scrollTop = this.moveHistoryElement.scrollHeight;
+    }
+
+    clearGameInfo() {
+        this.moveHistory = [];
+        this.moveHistoryElement.innerHTML = "";
+        
+        this.gameStatusElement.textContent = "Tour actuel : Blanc";
+        
+        this.selectedPiece = null;
     }
     
     updateGameStatus(status) {
@@ -1060,13 +1095,22 @@ class ChessGame {
     handleTimeout(color) {
         this.stopTimer();
         this.gameOver = true;
-        const winners = "white" ? "Les Noirs" : "Les Blancs";
+        const winners = color === "white" ? "Les Noirs" : "Les Blancs";
+        
+        // Add timeout result to move history
+        if (color === "white") {
+            this.moveHistory.push("0-1");
+        } else {
+            this.moveHistory.push("1-0");
+        }
+        this.updateMoveHistoryDisplay();
+        this.clearGameInfo();
+        
         socket.emit('update_database', {
             userId: this.playerId,
-            result: color === "white" ? "loss" : color === "black" ? "win" : "draw",
+            result: color === "white" ? "loss" : "win",
         });
         this.showGameOverPopup(`${winners} gagnent par timeout !`);
-        this.updateGameStatus(`${winners} gagnent par timeout`);
     }
 
     showPromotionDialog(color) {
