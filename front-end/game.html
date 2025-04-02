@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #chessboard {
+            border: 10px solid #5d4037;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            background-color: #8d6e63;
+            transition: transform 0.3s ease;
+        }
+
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 250px;
+        }
+
+        .timer {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .timer.active {
+            background: rgba(95, 92, 76, 0.3);
+            transform: scale(1.05);
+        }
+
+
+        .timer-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #4a6baf, #3a5683);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #5a7bbf, #4a6683);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .game-info {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 50px;
+            width: 800px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-info h2 {
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+
+        #gameOverPopup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid gold;
+            animation: popIn 0.4s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            80% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        #gameOverPopup p {
+            font-size: 1.5rem;
+            margin: 0 0 25px 0;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameOverPopup button {
+            background: linear-gradient(to bottom, #4CAF50, #388E3C);
+            font-size: 1.1rem;
+            padding: 12px 30px;
+        }
+
+        #gameOverPopup button:hover {
+            background: linear-gradient(to bottom, #5CBF60, #489E4C);
+        }
+
+        .move-highlight {
+            position: absolute;
+            background-color: rgba(255, 255, 0, 0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            transition: all 0.3s ease;
+            transform: scale(0);
+            animation: highlightAppear 0.3s forwards;
+        }
+
+        @keyframes highlightAppear {
+            to { transform: scale(1); }
+        }
+
+        .piece-captured {
+            animation: captureAnimation 0.5s forwards;
+        }
+
+        @keyframes captureAnimation {
+            to { opacity: 0; transform: scale(0.5) rotate(180deg); }
+        }
+
+        .piece-moved {
+            animation: moveAnimation 0.5s ease-out;
+            z-index: 20;
+        }
+
+        @keyframes moveAnimation {
+            to { transform: translate(0, 0); }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            display: none;
+        }
+
+        .promotion-choice {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #5d4037;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1001;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .promotion-choice h3 {
+            color: white;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .promotion-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .promotion-option {
+            width: 60px;
+            height: 60px;
+            background-color: #8d6e63;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .promotion-option:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px gold;
+        }
+
+        .promotion-option img {
+            max-width: 80%;
+            max-height: 80%;
+        }
+        @keyframes flash {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .stats-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1002;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stats-content {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid gold;
+            animation: popIn 0.4s ease-out;
+        }
+
+        .stats-content h3 {
+            margin-top: 0;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        #playerStats {
+            text-align: left;
+            margin: 20px 0;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        #playerStats p {
+            margin: 10px 0;
+        }
+
+        #playerStats span {
+            font-weight: bold;
+            color: gold;
+        }
+
+        #closeStatsBtn {
+            background: linear-gradient(to bottom, #4CAF50, #388E3C);
+            font-size: 1rem;
+            padding: 10px 25px;
+            margin-top: 15px;
+        }
+        .player-name {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            margin: 10px 0;
+            width: 400px;
+        }
+
+        .top-player {
+            margin-bottom: -10px;
+            color: #333;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .bottom-player {
+            margin-top: -10px;
+            color: #fff; 
+        }
+        
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Chess Game</h1>
+    
+    <div class="game-container">
+
+        <canvas id="chessboard" width="400" height="400"></canvas>
+
+        
+        <div class="timer-container">
+
+            <div id="blackTimer" class="timer">
+                <div class="timer-label">Noirs</div>
+                <div class="timer-display">10:00</div>
+            </div>
+
+            
+            <div id="whiteTimer" class="timer active">
+                <div class="timer-label">Blancs</div>
+                <div class="timer-display">10:00</div>
+            </div>
+        
+            
+            <div class="controls">
+                <button id="resignBtn">Abandonner</button>
+                <button id="playerStatsBtn">Mes Statistiques</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-popup" id="statsPopup" style="display: none;">
+        <div class="stats-content">
+            <h3>Mes Statistiques</h3>
+            <div id="playerStats">
+                <p>Parties jouées: <span id="gamesPlayed">0</span></p>
+                <p>Victoires: <span id="wins">0</span></p>
+                <p>Défaites: <span id="losses">0</span></p>
+                <p>Nulles: <span id="draws">0</span></p>
+                <p>Taux de victoire: <span id="winRate">0%</span></p>
+            </div>
+            <button id="closeStatsBtn">Fermer</button>
+        </div>
+    </div>
+    
+    <div class="game-info">
+        <h2>Informations sur la partie</h2>
+        <p id="gameStatus">Tour actuel : Blanc</p>
+        <p id="moveHistory"></p>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="promotion-choice" id="promotionChoice">
+        <h3>Choisissez la promotion de votre pion : </h3>
+        <div class="promotion-options">
+            <div class="promotion-option" data-piece="queen">
+                <img src="images/pieces/reine_blanc.png" alt="Queen">
+            </div>
+            <div class="promotion-option" data-piece="rook">
+                <img src="images/pieces/tour_blanc.png" alt="Rook">
+            </div>
+            <div class="promotion-option" data-piece="bishop">
+                <img src="images/pieces/fou_blanc.png" alt="Bishop">
+            </div>
+            <div class="promotion-option" data-piece="knight">
+                <img src="images/pieces/cavalier_blanc.png" alt="Knight">
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

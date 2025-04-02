@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="socket-client.js" defer></script>
+    <script src="accueil_script.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style-accueil.css">
+
+    
+</head>
+
+<body>
+    <h1>Bienvenue sur le jeu d'échecs</h1>
+
+    <div class="login">
+        <h2>Connexion</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="pseudo">Pseudo :</label>
+                <input type="text" id="pseudo" name="pseudo" 
+                    placeholder="Entrez votre pseudo" 
+                    required 
+                    minlength="3" 
+                    maxlength="16"
+                    pattern="[a-zA-Z0-9_]{3,16}">
+                <div class="error-message" id="pseudoError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="mdp">Mot de passe :</label>
+                <div class="password-container">
+                    <input type="password" id="mdp" name="mdp" 
+                        placeholder="Entrez votre mot de passe" 
+                        required 
+                        minlength="6">
+                    <span id="toggle-password" class="eye-icon">👁️</span>
+                    <div class="error-message" id="mdpError"></div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary">Se connecter</button>
+        </form>
+        <button id="subscribeBtn" class="btn-secondary" type="button">S'inscrire</button>
+    </div>
+
+    <div id="responseMessage" class="response-message"></div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <p id="errorMessage"></p>
+            <button id="closePopupBtn" class="btn-primary" type="button">Fermer</button>
+        </div>
+    </div>
+
+    <div id="serverError" class="server-error-message"></div>
+
+    <div id="subscribeModal" class="modal">
+        <div class="modal-content">
+            <span id="closeSubscribeModal" class="close-btn">&times;</span>
+            <h2>Créer un compte</h2>
+            <form id="subscribeForm">
+                <div class="form-group">
+                    <label for="newPseudo">Pseudo :</label>
+                    <input type="text" id="newPseudo" name="newPseudo" placeholder="Choisissez un pseudo" required>
+                    <div class="error-message" id="newPseudoError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="newMdp">Mot de passe :</label>
+                    <input type="password" id="newMdp" name="newMdp" placeholder="Créez un mot de passe" required>
+                    <div class="error-message" id="newMdpError"></div>
+                </div>
+                <button type="submit">S'inscrire</button>
+            </form>
+        </div>
+    </div>        
+    
+    <div class="inst">
+        <button id="instruction_button" class="btn-secondary" type="button">Instructions</button>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <!DOCTYPE html>
+
+
+
+</body>
+</html>

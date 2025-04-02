@@ -1,0 +1,24 @@
+.board-container {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    padding: 10px;
+    margin-top: 50px;
+    border-radius: 10px;
+}
+
+.waiting-timer {
+    margin: 20px auto;
+    text-align: center;
+}
+
+.waiting-timer .timer-display {
+    font-size: 2em;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.waiting-timer .timer-label {
+    margin-top: 10px;
+    color: #666;
+}
